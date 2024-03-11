@@ -1,5 +1,3 @@
-clp(fd) tutorial
-================
+# clp(fd) 教程
 
-A [tutorial about clp(fd)](clpfd.adoc) in the SWI-Prolog environment.
-
+一个SWI-Prolog环境下的[clp(fd) 教程](clpfd.adoc)。

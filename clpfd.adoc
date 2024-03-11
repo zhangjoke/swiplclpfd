@@ -1,5 +1,5 @@
-CLP(FD) Constraint Logic Programming over Finite Domains
-========================================================
+CLP(FD) 有限域上的约束逻辑程序设计
+=====================
 Anne Ogborn <annie66us@yahoo.com>
 :Author Initials: AO
 :toc2:
@@ -10,175 +10,162 @@ Anne Ogborn <annie66us@yahoo.com>
 
 link:/swipltuts/index.html[Up to All Tutorials]
 
-About This Tutorial
--------------------
+关于本教程
+-----
 
-Who Should Do This Tutorial
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+谁应该使用本教程
+~~~~~~~~
 
-This tutorial is for reasonably experienced SWI-Prolog programmers who want to use clp(fd).
+本教程适用于想要使用clp(fd)，且有一定经验的SWI-Prolog程序员。
 
-Additionally, this tutorial will be useful for Prolog programmers using other versions of Prolog who want to use clp(fd).
+此外，对于那些使用其他版本Prolog，且想要用clp(fd)的Prolog程序员，本教程也是有用的。
 
-The emphasis of this tutorial is *not* on the theory. The author
-is not a mathematician and the tutorial will probably not be of
-much use to competent mathematicians who can approach the material
-via the academic literature.
+本教程的重点**不**在理论。作者不是数学家，而且本文可能对那些能利用学术文献找到材料的称职的数学家也没多少用处。
 
-This tutorial should give you a grasp of the fundamentals of constraint systems on finite domains.
+本教程将帮助你理解有限域上的约束系统的基础知识。
 
-A certain minimal amount of 'practical wisdom' is covered. 
+它还含有一些__实践经验__。 
 
-But mostly this
-tutorial is a translation of the SWI-Prolog documentation of the clp(fd) predicates
-from the rather terse, math laden documentation
-to a more approachable level of English.
+这篇教程主要旨在用更平易近人的语言把简洁、充满数学语言的SWI-Prolog的clp(fd)谓词文档转述出来。
 
-What Is clp(fd) good for?
-~~~~~~~~~~~~~~~~~~~~~~~~~
+clp(fd)有什么用？
+~~~~~~~~~~~~
 
-clp(fd) is a library included in the standard SWI-Prolog distribution. It solves problems that involve sets of variables, where relationships among the variables need satisfied.
+clp(fd)是标准SWI-Prolog发行版中包含的一个库。它可以解决变量之间满足一定关系的多个变量的问题。 
 
-image::images/Robert_Wadlow.jpg["Robert Wadlow, at 108 inches the tallest person known", float="left"]
-clp(fd) is also useful for replacing many of the guard functions provided by getters and setters in OO languages. For example, if we don't know a person's actual height yet, we can still assert that it's more than 21 and less than 108 inches (shortest/tallest people known).
-When we eventually do find a solution, unreasonable values will be rejected.
+image::images/Robert_Wadlow.jpg["罗伯特·瓦德罗，以108英寸的身高成为世界上已知的最高的人", float="left"]
+clp(fd)还可用于替代面向对象语言中由getter和setter提供的许多保护函数。例如，如果我们尚不知道一个人的实际身高，但我们仍然可以肯定他的身高会超过21英寸，但不会高于108英寸（已知的最矮/最高身高）。
+当我们最终求得一个解时，不合理的值将被丢弃。
 
-clp(fd) is useful for optimizing search problems by reducing search spaces. Constraints can trim away entire subtrees of the search space.
+clp(fd)可以通过减少搜索空间来优化搜索问题。约束条件可以削减搜索空间中的整个子树。
 
-clp(fd) is useful for solving a wide variety of 'find values for these variables' problems. Here are some broad categories of problems that clp(fd) can address:
+在解决各种'求得变量值'的问题时，clp(fd)非常有用。这是一些clp(fd)可以解决的问题的大类：
 
- * Ensuring program correctness by constraining variables to reasonable ranges
- * Scheduling problems, like, 'when should we do what work in this factory to make these products?'
- * Optimization problems, like 'which mix of products should we make in this factory to maximize profits?'
- * Satisficing problems,  like finding an arrangement of rooms in a hospital that meets criteria like having the operating theater near the recovery rooms, or finding a set of vacation plans the whole family can agree on.
- * Sequence problems, like finding a travel itinerary that gets us to our destination.
- * Labeling problems, like Sudoku or Cryptarithm puzzles
- * Problems of belief and intention, like detective puzzles and NPC's in games
- * Allocation problems, like finding an assignment of flight crews to aircraft that meets union requirements for maximum time away from home
- * finding acceptable solutions to linked sets of variables, for example, working out who'se going to the party among a group of jealous teenage girls when A will only go if B goes, but B won't go if C goes, and so on
- * Creating lists of acceptable alternatives for multiple interacting variables. For example, a caterer might want to see different offerings for a banquet menu that meet some criteria of cost, scheduling of cooks and waiters, ovens, and so on, then decide for themeselves which to select.
- * Geometric constraints for graphics, eg. a CAD system, where two lines must be perpendicular, another two parallel, others 30 inches apart, and so on.
+ *  通过将变量约束在合理范围内确保程序的正确性
+ * 调度问题，例如，'应该在什么时候做什么工作来生产这些产品？'
+ * 优化问题，例如，'为了实现利润最大化，我们应该在这家工厂生产什么产品组合？'
+ * 需求满足问题，例如寻找医院中符合条件的房间，比如在康复室旁的手术室，或是规划全家都赞成的度假方案。
+ * 排序问题，例如规划我们前往目的地的路线。
+ * 标注问题，例如数独或密码算术问题。
+ * 信任与意图问题，例如侦探谜题和游戏中的非玩家角色。
+ * 分配问题，例如寻求一个分配飞机机组人员的方案，使其满足工会的最大时间出勤的要求。
+ * 为涉及多个相关联的变量的问题寻求令人满意的解，例如有一群互相猜忌的少女要参加聚会，其中，如果B要去，A才会去；如果C要去，B就不会去，等等，需要算出谁会去参加聚会。
+ * 为多个互相影响的变量创建可接受的方案列表。例如，一个宴席筹备者可能希望给出的宴席菜单能满足预算、厨师和侍者的日程、烤箱的安排等不同需求，然后自己选择采用哪个方案。
+ * 图形的几何约束条件，例如，在一个CAD系统中，要求其中两条线必须垂直，另外两条必须平行，其他两条线相距30英寸，诸如此类。
 
-.Uses of clp(fd) Exercise
+.clp(fd)的运用练习
 *************************
 
-Make up another example for each of the categories above. 
+给上面的各个类别再举一个例子。 
 
-Try to expand the domain of the problem as much as you can. 
+尽量扩展问题的范围。 
 
-For example, we usually think of sequencing as time, but it could be some other dimension.
-Given a set of train cars, putting them in an order that makes sense and obeys some rules like no tank cars next to the engine, the caboose has to be on the back, etc. is a sequence problem.
+例如，我们通常认为排序是时间上的先后顺序，但它也可能是其他维度上的顺序。
+给定一组火车车厢，按合理的顺序排列它们，并遵守一些规则，比如，油罐车不得靠近引擎，守车必须在后面，这就是一个排序问题。
 
-Don't worry if you have trouble with this one - it's OK to punt some.
+如果你在这个问题上有困难，也别担心——可以先放一边。
 
 ************************* 
 
-Prerequisites
-~~~~~~~~~~~~~
+前提
+~~
 
-Competence in the basics of SWI-Prolog.
+掌握SWI-Prolog的基础知识。
 
-A level of mathematical sophistication comparable to that of an
-upper level standing in a computer science undergrad program.
+数学水平与计算机科学本科课程的高等水平相当。
 
-A working SWI-Prolog installation.
+SWI-Prolog已安装并运行正常。
 
-There is no set of additional code for this tutorial. You can cut and paste many of the examples.
+本教程没有附带代码文件。你可以剪贴示例代码。
 
-What You Can Expect From This Tutorial
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+你可以从本教程中学到什么
+~~~~~~~~~~~~
 
-If you read through this tutorial and work all the exercises you
-can expect to:
+如果你读完此教程，并完成所有练习，预计能够：
 
- * understand the basic concept of constraint programming
- * be able to write programs that find solutions to unknown values
- * be able to formulate real world problems using the clp(fd) library predicates
- * be able to select appropriate solutions to constraint system problems.
- * understand how to use clp(fd) in real world SWI-Prolog programs.
- 
-Time to Complete
-~~~~~~~~~~~~~~~~
+ * 了解约束编程的基本概念。
+ * 能编写求得未知值的解的程序。
+ * 能用clp(fd)库表述实世界中的问题。
+ * 能对约束系统问题选用适当的解决方案。
+ * 了解如何在实际的SWI-Prolog的程序中使用clp(fd)。
 
-6-8 hours, though it varies with one's mathematical experience.
+完成时间
+~~~~
 
-The CLP(FD) Library
--------------------
+6-8小时，因人的数学水平而异。
 
-The clp(fd) library for SWI-Prolog was written by Markus Triska for his PhD thesis. clp(fd) stands for 'Constraint Logic Programming over Finite Domains'.
+CLP(FD)库
+--------
 
-clp(fd) is one of several constraint solvers available in SWI-Prolog. There are others: clp(b), clp(qr). clp(b) handles booleans. clp(qr) handles rationals and reals. CHR is a tool for making your own constraint systems (among other things).
+SWI-Prolog的clp(fd)库是由马库斯·特里斯卡为完成他的博士论文而编写的。clp(fd)代表__有限域上的约束逻辑程序设计__。
 
-The clp(fd) library can be activated by simply 
+clp(fd)是SWI-Prolog中可用的几种约束求解器之一。其他的有：clp(b)，clp(qr)。clp(b)处理布尔值。clp(qr)处理有理数和实数。约束处理规则是一个用于创建你自己的约束系统的工具（结合其他东西）。
+
+启用clp(fd)库很容易： 
 
 ----------------------------
 :- use_module(library(clpfd)).
 ----------------------------
 
-This installs a compile-time hook that optimizes some clp(fd) constraints, and loads a run-time library.
+这将建立一个编译时的钩子，可以优化一些clp(fd)约束，并加载运行时库。
 
-Variables
----------
+变量
+--
 
-We use the term _variable_ rather loosely in computer science.
+在计算机科学中，我们可以不那么严格地使用__变量__这个术语。
 
-Replacement Variables
-~~~~~~~~~~~~~~~~~~~~~
+替代变量
+~~~~
 
-In imperative languages like Java variables are mutable.
-Their values change over time.
+在命令式语言中，比如Java，变量是可变的。
+它们在不同时候有不同的值。
 
-In C, a variable like x
+在C语言中，像变量x：
 
 ---------------------
 int x;
 
-... what about here? ...
+... 这里怎么样了？...
 
 x = 5;
 ---------------------
 
-always has a value. Before we assign 5 to it, the value is whatever happened to be in that memory location (a source of delight for security programmers everywhere).
+总是有一个值。在我们将5赋值给该变量之前，它的值会是任何碰巧储存在其内存位置的值（这对所有安全程序员来说都是一个快乐的源泉）。
 
-Logic Variables
-~~~~~~~~~~~~~~~
+逻辑变量
+~~~~
 
-Variables in a logic language are different. They are much more like variables or 'unknowns' in high school algebra. 
+在逻辑式语言中，变量是不同的。它们更像高中代数中的变量或__未知数__。 
 
-In Prolog a variable
-can be bound or unbound. An unbound variable will unify with any
-value. A bound variable unifies only with one template.
+在Prolog中，变量可以是绑定或非绑定的。非绑定变量可以匹配任何值。一个绑定变量仅与一个模板一致。
 
-In effect, we either know, or don't know, the value of the variable.
+实际上，我们要么知道，要么不知道这种变量的值。
 
-When we try to unify, we are, effectively, asking, "is what we know
-about the answer on the left compatible with what we know about the answer on the right?"
-Bob claims to be good friends with the Mayor of Maintown. If Bob's the editor of the Maintown Daily, that's entirely believable. If Bob also claims to have never set foot in Maintown, it's inconsistent.
+当我们试图给变量匹配值时，我们实际上是在问：“我们把答案代入左边和右边的式子，它们能否配平？”鲍勃声称自己是主城市长的好友。如果鲍勃是《主城日报》的编辑，这很可能是可信的。但如果鲍勃说他从没来过主城，这就有些矛盾了。
 
-In Prolog we have only two possibilities, for an atomic result. Know absolutely nothing, or know exactly. Obviously we might have unbound variables within a list or term, but for each variable there are only these two states.
+在Prolog中，一个原子的结果只有两种可能。完全不知道，或完全知道。显然，在列表或项中可能有非绑定变量，但对于每个变量，只有这两种状态。
 
-Constrained Variables
-~~~~~~~~~~~~~~~~~~~~~
+约束变量
+~~~~
 
-But in the real world we can say more about a variable. 
+但在现实世界，我们可以讲出更多关于变量的内容。 
 
-We might not know the exact value, but we know it is one of a set of possible values. We call this it's _domain_.
+有时我们可能不知道确切的值是多少，但我们知道它的值会是一组可能值的其中之一。我们把这组值称为这个变量的__域__。
 
-We might know it's value is, say, greater than the value of some other variable, whose value we also don't know. We say the variable is *constrained*.
+有时我们可能不知道它的值是多少，但可以说出它比其他一些我们同样不知道值的变量要大。我们说这个变量是**被约束**的。
 
-As we begin to accumulate constraints, we start to be able to
-reason about the constraints.  
-Suppose we have two variables, X and Y, which are integers.
+随着我们开始积累约束条件，我们就能围绕约束条件进行推理。
+假设我们有两个整数变量，X和Y。
 
-Now I tell you that X is in the range 0 to 10.
+现在我告诉你，X在0到10之间。
 
-Further I tell you that Y is in range 4 to 8.
+接着，Y在4到8之间。
 
-And finally that X is more than Y. 
+最后，X大于Y。 
 
-You can infer that X is within the narrower range 5 to 10, since the lowest value Y can have is 4, and X must be one more than Y.
+你可以推断出，X在5到10这个更窄的范围内，因为Y的最小值是4，并且X必须比Y至少大1。
 
-Here's how it looks in clp(fd). Don't worry if you don't understand all of this yet
+这便是用clp(fd)表述出来的的样子。如果你不能完全理解这些，也不要担心。
 
 -------------------------------------------
 :- use_module(library(clpfd)).         <1>
@@ -192,17 +179,17 @@ test(X, Y) :-
 14 ?- test(X, Y).
 X in 5..10,             <5>
 Y#=<X,                  <6>
-Y in 4..8.  
+Y in 4..8.
 -------------------------------------------
 
-<1> include the clp(fd) library
-<2> constrain X to be in 0 through 10 using the 'in' operator
-<3> constrain Y to be in 4 through 8 using the 'in' operator
-<4> constrain X to be greater than Y using the '#>' operator
-<5> X is now constrained to 5 through 10
-<6> Y is now constrained to be =< X - 1 (same as X > Y), and in the range 4 through 8.
+<1> 导入clp(fd)库
+<2> 使用__in__运算符，约束X在0到10之间
+<3> 使用__in__运算符，约束Y在4到8之间
+<4> 使用__#>__运算符，约束X比Y大
+<5> 现在X被约束到5到10之间
+<6> 现在Y被约束为=< X - 1（同样是X>Y），且范围为4到8。
 
-When we have constrained a variable to a single value, something rather magical happens - we now know the value of the variable, so we can bind the variable. And in clp(fd) this is indeed what happens! Suppose I constrain X to the range 0 to 5, and Y to 4 to 8, and X > Y, then suddenly X is now in bound to 5. ground(X) succeeds, and X is a perfectly ordinary bound variable.
+当我们把一个变量约束为一个值时，会发生一些神奇的事——我们现在已经得出此变量的值，因此可以绑定此变量。在clp(fd)中，确实发生了这种情况！假设我将X约束在0到5之间，将Y约束在4到8之间，并且X> Y，那么现在X突然绑定为5了。ground(X)成功了，并且X是一个非常普通的绑定变量。
 
 -------------------------------
 :- use_module(library(clpfd)).
@@ -218,17 +205,17 @@ Y = 4.     <2>
 
 -------------------------------
 
-<1> X is bound just like normal Prolog
-<2> Notice that Y is bound too. Further, it's lost it's original constraints
+<1> X被绑定，就像在正常的Prolog中那样
+<2> 注意，Y也被绑定了。此外，它移除了原先与约束相关的信息
 
-.punch and run Exercise
+.运行练习
 ***********************
 
-Type in and try the two examples above. Step into them with the graphic debugger to see the constraints listed.
+输入并尝试以上两个例子。使用图形调试器进入它们，以查看列出的约束。
 
 *********************** 
 
-.backtracking Exercise
+.回溯练习
 **********************
 
 ------------------------------
@@ -239,52 +226,47 @@ foo(X) :- X in 5..7 .
 foo(X) :- X in 8..12 .
 ------------------------------
 
-What will happen if you query foo(X) and get all the solutions by backtracking?
-Predict what will happen, and then try it. Was your prediction correct?
+如果查询foo(X)，并通过回溯得出所有的解，将会发生什么？
+预测会发生什么，并尝试它。你的预测正确吗？
 
 ********************** 
 
-Implementation
-~~~~~~~~~~~~~~
+实现
+~~
 
-SWI-Prolog has the ability to add *attributes* to variables. This is additional meta-data attached to the variable. If you're interested, you can read more about attributed variables at link:http://swi-prolog.org/pldoc/man?section=attvar[The SWI-Prolog website].
+SWI-Prolog具有给变量添加**属性**的能力。这个是给变量附加附加元数据。如果你有兴趣，可以阅读更多有关属性变量的内容： http://swi-prolog.org/pldoc/man?section=attvar[SWI-Prolog网站]。
 
-clp(fd) uses this attribute data to decorate the variables with constraints. Then clp(fd) implements constraint programming as an expansion of the normal Prolog unification. 
+clp(fd)使用这种属性数据修饰约束变量。然后clp(fd)实现了约束编程，并成为了各种常见Prolog一致采用的扩展。 
 
-More on this at the end of the tutorial.
+本教程结尾将对此作更多介绍。
 
-.attributes Exercise
+.属性练习
 *********************
 
-Extra credit -
+额外加分 -
 
-Think up another use for attributes on variables besides constraints
+考虑除了用于约束，变量属性的另一种用法。
 
 ********************* 
 
-Domains
-~~~~~~~
+域
+~
 
-The (fd) in clp(fd) stands for 'finite domain'. This domain could have millions of values, but it must be a finite list.
+clp(fd)中的(fd)表示__有限域__。该域可以具有数百万个值，但它必须是一个有限列表。
 
-We're only concerned with variables with a finite domain, the *finite domain* of the name. For our purposes that means we want to reason about domains that are sets of integers. 
+我们只关心有着有限域的变量，也就是名称中所强调的**有限域**那样。就我们的目的而言，这意味我们要对整数集的域进行推理。 
 
-`clp(fd)` works with a domain like `[air, land, sea]`, but can't optimize well. Better to map air=0, land=1, sea=2 and then say the domain is `0..2` .
-Any finite list of possibilites can be mapped into a finite subset of the integers.
+`clp(fd)` 可以用于 `[天空, 陆地, 海洋]` 这样的域，但优化效果不佳。映射“天空=0, 陆地=1, 海洋=2”，然后就可以说它的域是 `0..2` 了，这样会更好。
+任何可能的有限列表都可以映射为整数有限子集。
 
-At first this can seem awkward, but it's really no different than using array indices. A bigger issue can be debugging - lists of integers can be pretty meaningless. Writing some debug code to extract the data and print it can help.
+乍一看，这么做可能显得有些笨拙，但实际上跟使用数组索引没什么不同。然而，更大的问题可能是调试——由整数组成的列表可能让人不知所云。编写一些调试代码提取并输出数据，可能会有帮助。
 
-An Example
-----------
+一个示例
+----
 
-I'm always annoyed by discussions that blather on, ungrounded in reality. So here's a classic constraint program, with brief descriptions of the parts. You may not understand all the parts yet.
+我对那些喋喋不休、毫无根据的讨论总是感到恼火。那么在这里展示一个典型的约束程序，并给一些部分附注简要说明。你可能还不了解这些部分。
 
-The SEND + MORE = MONEY cryptoarithmetic puzzle is a classic
-"hello world" for constraint programming. The puzzle is
-to assign the digits 0 thru 9 to letters such that they
-spell out SEND MORE MONEY and when read as base 10 numbers
-create a true mathematical formula. Leading zeros are not
-permitted on numbers.
+“SEND + MORE = MONEY”密码算术问题是约束编程中的经典“hello world”。这个问题要求将0到9数字分配给各种字母，使它们拼出SEND MORE MONEY，当按照十进制读取数字时，会形成真正的算式。数字不允许有前导0。
 
 ------------------------
 :- use_module(library(clpfd)).         <1>
@@ -304,65 +286,63 @@ X = ([9, 5, 6, 7]+[1, 0, 8, 5]=[1, 0, 6, 5, 2]) ;  <9>
 false.
 ------------------------
 
-<1> include the clp(fd) library
-<2> note the clp(fd) is not an embedded DSL like pce or quasiquotes. clp(fd) 'rides along' with Prolog, adding semantics.
-<3> for convenience make a list of all the variables we'll constrain
-<4> restrict each variable in Vars to the range 0..9 inclusive
-<5> add the constraint that they must all be different
-<6> add the arithmetic constraint that defines the puzzle
-<7> M and S start words, and hence cannot be zero
-<8> attempt to ground as many variables as possible.
-<9> notice that there's no funny attribution outside, it just returns the solution
+<1> 导入clp(fd)库
+<2> 注意，clp(fd)不是pce或准引用那样的嵌入式领域特定语言。clp(fd)随Prolog一同使用，增多了语义。
+<3> 为方便起见，列出了我们要约束的所有变量
+<4> 把Vars中的每个变量的值限制在0..9之间（含）
+<5> 添加约束条件，它们的值必须是不同的
+<6> 添加定义问题的算术约束条件
+<7> 单词以M和S打头，因此这两个字母不能为0
+<8> 尝试尽可能确定变量的数值
+<9> 注意，从这里开始再没有有趣的归因，这个只是用来返回解
 
-.FortyTenTen Exercise
+.FortyTenTen练习
 **********************
 
-1) Solve the cryptarithm 
-FORTY + TEN + TEN = SIXTY
-by modifying the program
+1)通过修改程序来解决密码算术FORTY + TEN + TEN = SIXTY
 
-2) are there more solutions to SEND+MORE=MONEY if you allow leading zeros? Modify the program to find out.
+2) 如果允许前导0，SEND+MORE=MONEY是否还有其他的解？修改程序，找出答案。
 
 ********************** 
 
-Labeling
---------
+ 标注
+--
 
-Attaching constraints is nice, but ultimately of little use until we can get back to simply grounding the variables. A solution with all the variables ground is called a 'ground solution'.
+添加约束条件是好的，但除非我们能和往常一样简单地确定变量，否则它的用处不大。确定了所有变量的解称为'确定解'。
 
-There are a few minor mechanisms for doing so. 
+有一个较细微的机制可以做到这一点。 
 
-If you reduce the domain to a single value, the variable will be ground.
+如果把域缩减至单个值，就能确定变量。
 
-You can simply ground the variable normally. The usual +X = 3+ constrains the variable to a single value. 
+通常你能轻易限定变量。一般用++X = 3++这样的语句把变量确定为单个值。 
 
-And the predicate +indomain/1+ successively binds a single variable to it's possible values on backtracking.
+谓词++indomain/1++在回溯时，会不断给变量绑定其可能值。
 
-But mostly we call +label/1+ or +labeling/2+ to find a single ground solution. +label/1+ and +labeling/2+ are nondeterministic, binding a different set of values on each backtracking.
+通常，我们调用++label/1++或++labeling/2++来找出单个的确定解。++label/1++和++labeling/2++是非确定性的，在每次回溯时，都会绑定一组不同的值。
 
-Of course our constraint system may not be powerful enough to express every constraint. If so, we must fall back on the generate and test search strategy familiar to all Prolog programmers. With constraint systems, generate and test becomes 
+当然，我们的约束系统可能不够强大，不足以表述各种约束条件。既然这样，我们就必须依靠Prolog程序员所熟悉的生成和测试搜索策略。有了约束系统，生成和测试会成为 
 
-. constrain
-. generate (by labeling)
-. test
+. 约束
+. 生成（通过标注）
+. 测试
 
-and indeed most clp(fd) programs follow a general pattern of constrain followed by label.
+实际上，大多数clp(fd)程序遵循先约束后标注这种通用模式。
 
 [TIP]
-It's a good practice to set up the model and do the labeling and any remaining searching in separate predicates. This makes it easier to inspect the model before labeling is applied.
+建立模型并对各个谓词进行标注和剩余搜索是良好的做法。这使得在标注之前更容易检查这个模型。
 
-+labeling/2+ has a wealth of options that affect the variable selection strategy. Since most of the time taken by a clp(fd) program is usually in the labeling, we'll cover these in detail later. For now we'll use +label/1+, which has reasonable defaults.
+++labeling/2++有大量能够影响变量选取策略的选项。由于clp(fd)程序花费的大部分时间通常是用于标注，因此我们会在后面详细介绍这些内容。而现在我们使用++label/1++，它的默认参数比较合理。
 
-The options in +labeling/2+ are also used with optimization problems of the 'make the most profit' type.
+++labeling/2++中的选项也能用来处理__最大收益__的优化问题。
 
-Simple Constraints
-------------------
+简单约束
+----
 
-clp(fd) provides a basic set of primitive constraints.
+clp(fd)提供了一组基本、简单的约束语句。
 
-Remember that clp(fd) works with integers.
+请记住，clp(fd)与整数一起使用。
 
-.simple operators
+.简单的运算符
 -------------------
 X #>= Y
 X #=< Y
@@ -373,12 +353,12 @@ X #< Y
 -------------------
 
 [TIP]
-You can use +#=+ as a declarative version of +is+, in what is otherwise not a clp(fd) program. +X is 3+Y+ requires Y to be ground, while +X #= 3+Y+ works if X is ground and Y is not.
- 
-[TIP]
-+X #< Y+ is useful to get rid of uninteresting symmetries. For example, if players 1 and 3 are matched in a tournament then there's no point considering the match 3 and 1. Consider this example taken from the SWI-Prolog documentation that finds all the ways to pair up 4 people:
+你可以把++#=++当作++is++的一种声明式版本来使用，不然就不像是在编写clp(fd)程序。++X is 3+Y++需要Y是确定的；而++X #= 3+Y++，在X确定、Y没确定的情况下也是有效的。
 
-.Removing Symmetry
+[TIP]
+++X #< Y++可以省去不必要的对调。例如，如果在锦标赛中玩家1和3已配对，再考虑3和1的配对是没有意义的。思考下面取自SWI-Prolog文档的示例，它找出了能让4个人配对的所有形式：
+
+.消除对调
 ====================
 
 -------------------------------
@@ -394,12 +374,12 @@ Ms = [ pair(1, 2)-pair(3, 4),
 ====================
 
 
-.Strictly Increasing Exercise
+.严格递增练习
 *****************************
 
-Write a predicate +increase/1+ that takes a list and constrains it to be strictly increasing.
+编写一个谓词++increase/1++ ，它接收一个列表，然后约束其严格递增。
 
-First record what result you expect from each query below. Then test that your predicate does what you expect.
+首先记录你预计每个查询的结果。然后测试你的谓词的行为是否符合你的预期。
 
 ------------------------
 
@@ -419,15 +399,15 @@ First record what result you expect from each query below. Then test that your p
 *****************************
 
 
-Constraining to a Domain
-------------------------
+约束为一个域
+------
 
-Clp(fd) is concerned with the domains of variables. 
+Clp(fd)围绕着变量的域。 
 
-The _domain_ of a variable is simply the set of values it can take on.
+变量的__域__是它可以取的一组值。
 
-In clp(fd) every variable must be restricted to a "finite domain" in order to reason about it. 
-You _do need_ to give variables a domain before you try to label them! If not, you'll get a baffling `ERROR: Arguments are not sufficiently instantiated` exception.
+在clp(fd)中，每个变量必须被限制到“有限域”，以进行推理。
+在尝试标注所给的变量之前，你__需要__把域赋给它们。如果不是，你将得到令人困惑的异常，__错误：参数未被充分实例化__。
 
 -----------------
 X in 5..10,   <1>
@@ -435,37 +415,36 @@ Y in 1..10,   <2>
 Y #> X        <3>
 -----------------
 
-<1> Set a domain for X - in this case 5 through 10
-<2> Set a domain for Y - 1 through 10
-<3> Now constraint Y to be more than X.  So we can reason about Y's domain. Y must be one of the values 6,7,8,9, or 10.
+<1> X的域设定为5到10
+<2> Y的域设定为-1到10
+<3> 约束Y大于X，这样就能推断出Y的域。Y必须为6、7、8、9、10其中之一。
 
 
-Oddly, for all the talk of _finite_ domains, it's allowed to constrain a variable to a domain like `4..sup` - 4 through infinity. `inf` is negative infinity.
+奇怪的是，对于所有有关__有限__域的讨论，都允许像 `4..sup` 那样，把变量约束到4至无穷大的域。`inf` 则表示负无穷大。
 
-In and Ins
-~~~~~~~~~~
+In和Ins
+~~~~~~
 
-You can restrict the domains of variables with the +in+ and +ins+ operators.
+你可以使用++in++和++ins++运算符来限制变量的域。
 
-Both +in+ and +ins+ take a domain on the right side.
-A domain is a simple range or a union of simple ranges with the
-\/ operator
+++in++和++ins++都是针对右边的域。
+一个域是一个简单范围或用\/运算符把几个简单范围组合成的一个并集。
 
-A simple domain can be a single integer or a pair of bounds connected with double dots. The bounds can be integers, or +inf+ for the least member or +sup+ for the greatest member. Any of these can be a ground variable, like +N=3, X in 1..N+ .
+一个简单域可以是单个数字或由双点相连的一组边界。边界可以是数字，或表示最小数的++inf++，或表示最大数的++sup++。其中任何一个都可以是确定变量，比如++N=3, X in 1..N++。
 
-The +\/+ operator 
-~~~~~~~~~~~~~~~~~
+++\/++运算符 
+~~~~~~~~~
 
-Domains can be unioned together with the +\/+ operator
+++\/++运算符可以把几个域并在一起。
 
-.Unions
+.并集
 --------------------
 1..3 \/ 5..7
 --------------------
 
-Here's an example of a more complex domain.
+下面是一个更复杂的域的示例。
 
-.Complex Domain
+.复杂域
 =====================
 
 ---------------------
@@ -474,34 +453,32 @@ V in inf.. -2 \/ 0 \/ 2..16 \/ 18..sup
 
 =====================
 
-+in+ constrains a single variable.
+++in++用于约束单个变量。
 
-+ins+ constrains a list of variables to the same values, the equivilent of maplist over the list with in.
+++ins++把一个变量列表中的变量都约束为同样范围的值，相当于是具有in性质的映射列表。
 
-.Overlapping Domains Exercise
+.重叠域练习
 ********************************************************
 
-Try the above _Complex Domain_ example, and
-then change the last range to `16 .. sup`.
+尝试上面的__复杂域__示例，然后将最后一个范围改为 '16 .. sup` 。
 
-Notice that it simplifies the domain.
+注意，它简化了这个域。
 
 ********************************************************
 
 
-Domain From Data
-~~~~~~~~~~~~~~~~
+来自数据的域
+~~~~~~
 
-What if your domain data comes from input data? Suppose we get a data structure from somewhere and need to constrain to it in some way.
+如果你的域需要从输入数据中获取呢？假设我们从某处得到一个数据结构，需要以某种方式对其约束。
 
-Assemble your domain as a term `MyDomain` and use `X in MyDomain`. Here's an example
+将你的域组合为一个项 `MyDomain` ，并使用 'X in MyDomain' 。下面是一个示例
 
-.A Domain From Data
+.来自数据的域
 ===================
 
 --------------------------------------------------------------------
-% Bases is a list of ints. Constrain Var to be within B..B+2 for B
-% a member of Bases
+% Bases是一个整数列表。用B表示Bases的一个成员，约束Var为B..B+2
 
 two_domains(Bases, Var) :-
 	make_two_domains(Bases, Term),
@@ -519,73 +496,70 @@ make_two_domains([H | T], '\\/'(H .. HT, TDomain)) :-
 
 ===================
 
-Arithmetic Operators
---------------------
+算术运算符
+-----
 
-You can do a lot of constraint work with the arithmetic constraints.
+你可以用算术约束来进行很多约束工作。
 
-Constraints can take infix arithmetic expressions. 
+可以采用中缀算术表达式来进行约束。 
 
 ---------------
 X + 2 #= Y * 3
 ---------------
 
-The available operators are 
+可用的运算符有 
 
-- unary -, 
-- +, 
-- -, 
-- *, 
-- / (truncated integer division), 
-- ^ (exponentiation), 
-- min, 
-- max, 
-- mod, 
-- rem, 
+- 一元运算符-，
+- +，
+- -，
+- *，
+- / （截断整除）， 
+- ^ （ 幂），
+- min， 
+- max，
+- mod，
+- rem，
 - abs
 
-Logical Operators
------------------
+逻辑运算符
+-----
 
-+`#\`+ Negation
-~~~~~~~~~~~~~~~
-
-Unary. Inverts the contained constraint.
-
-+`#/\`+ And
-~~~~~~~~~~~
-
-Constrains both sides to hold.
-
-+`#\/`+ Or
+++`#\`++否定
 ~~~~~~~~~~
 
-Constrains at least one side to hold.
+一元运算符。反转所包含的约束。
 
-Reification
------------
+++`#/\`++和
+~~~~~~~~~~
 
-Reification is the process of using constraints to control other constraints. clp(fd) includes two operators for reification.
+同时约束两边。
 
-+`#<==>`+ Equivalency
-~~~~~~~~~~~~~~~~~~~~~
+++`#\/`++或
+~~~~~~~~~~
 
-Each side may be a boolean variable (a 0 or 1) or a constraint. The constraints are modified so they both hold, or their negations both hold.
+至少约束一边。
 
-+`#==>`+ Implication
-~~~~~~~~~~~~~~~~~~~~
+具体化
+---
 
-If the left side holds, then the right side must hold.
-If the left side does not hold, then the right side is ignored.
+具体化是通过约束来控制其他约束的过程。clp(fd)包含两个用于具体化的操作符。
+
+++`#<==>`++等价
+~~~~~~~~~~~~~
+
+每边是个布尔型变量（一个0或1）或是个约束。调节约束，使它们都成立或都不成立。
+
+++`#==>`++蕴含
+~~~~~~~~~~~~
+
+如果左边成立，则右边必须成立。
+如果左边不成立，则右边被忽略。
 
 
-.Some Reified Constraints
+.一些具体化的约束
 =============================
 
-In a chemical plant there is a reaction vessel. The
-temperature in the vessel is constrained to be less
-than a certain value, and to be more than another value,
-except when in 'startup' mode.
+在化工厂里有一个反应容器。这个容器中的温度被限定为必须低于某个特定数值，并在不是__启动__模式的情况下，还要高于另一个值。
 
 -----------------------------
 
@@ -595,8 +569,7 @@ chem_tank(Temp, Startup) :-
 
 -----------------------------
 
-We can define startup mode as lasting for 10 minutes after
-some StartTime.
+我们可以将启动模式定义为起始后的10分钟以内。
 
 -----------------------------
 
@@ -605,53 +578,48 @@ chem_demo(Temp, TimeNow, StartTime) :-
 
 -----------------------------
 
-Notice that +StartTime+ is passed in *as a constraint* , and used to apply
-to the logical operators.
+注意，++StartTime++是**作为一个约束**传入的，并且使用了逻辑运算符。
 
-This means you can build up constraints and pass them around, applying them
-later, or building up more complex constraints using them.
+这意味着你可以构建、传递约束，并在随后应用它们，或者使用它们构建更复杂的约束。
 
 =============================
 
-.Employment exercise
+.工作练习
 ************
-Write a small system that matches people with jobs. The jobs have requirements for education level, weight they can lift, age, distance from home. Be able to record special constraints in the individual's
-record - eg. Bob's on parole and can't work more than 20 miles from home. Sally wants a helper, but has had problems with workers hanging around when not working, she wants someone who lives more than 10 miles away.
+编写一个匹配人和工作的小系统。这些工作对教育水平、能举起的重量、年龄、离家距离都有要求。要能够记录在个人履历中特殊约束条件——比如，鲍勃在假释期间，离家不得超过20英里；莎莉需要一个帮手，但她不喜欢那些不工作时到处闲逛的工人，她还想要那个帮手住在10英里以外。
 
-People have funny situations, so try to make it general. 
+人们都有些有趣的状况，所以试着将其概括出来。 
 
-For this exercise you can make the (unrealistic) assumption that users know Prolog.
+对于这个练习，你可以（不现实地）假设用户了解Prolog。
 ************
 
 
-Commonly Useful Constraints
----------------------------
+常用约束
+----
 
-We now turn to looking at the more 'convenience' predicates provided in the clp(fd) library. Most establish a large number of simple constraints at the same time.
+现在我们来看clp(fd)库中提供的一些更__方便__的谓词。大多数这些谓词同时设定了大量的简单约束条件。
 
-As well as introducing the convenience predicates, it's also a good way to develop a facility with using constraints.
+除了引入了方便的谓词外，这也是使用约束开发工具的好办法。
 
-Here are a few constraints that are useful in a wide variety of constraint situations.
+下面是一些在大多数约束情境下比较有用的约束。
 
 length(List, Length)
 ~~~~~~~~~~~~~~~~~~~~
 
-This of course is good ol' length. It's useful in the length(-, +) mode
-to generate a list of unbound variables. 
+这个当然是过去那个好用的长度谓词。在length(-, +)模式下生成非绑定变量列表很有效。 
 
 [TIP]
-+length_(Length, List) :- length(List, Length).+ is sometimes handy to make lists of unbound variables in call + 1 situations.
-+length(List, 9), maplist(length_(9), List)+ gives a 2D array of
-unbound variables, for example.
+在call + 1的情况下通过++length_(Length, List) :- length(List, Length).++列出非绑定变量列表有时很方便。
+像++length(List, 9), maplist(length_(9), List)++就可以给出非绑定变量的二维数组。
 
-.length Exercise
+.length练习
 ****************
 
 ------------
 ?- length(X, 5).
 ------------
 
-Now try 
+现在尝试 
 
 ------------
 ?- length(X, Y).
@@ -662,20 +630,19 @@ Now try
 all_different(List)
 ~~~~~~~~~~~~~~~~~~~
 
-This predicate is used frequently. It constrains the members of List to
-different values.
+经常会用到这个谓词。它能将列表的成员约束为不同的值。
 
-.all_different Example
+.all_different示例
 ----------------------
  ?- length(List, 4),List ins 1..4, all_different(List), List = [1,_,3,4].
 List = [1, 2, 3, 4].
 ----------------------
 
-+all_different/1+ is useful in conjunction with the 'pigeonhole principle', which says that if you have N variables each an element of 1..M , and N > M, then there must be two variables with the same value. In the above example, List must always be a permutation of [1, 2, 3, 4] for this reason.
+++all_different/1++与__鸽巢原理__结合起来会很有用，该原理指，如果你有N个变量，每个元素在1..M的范围内，且N>M，那么一定有两个变量具有相同的值。出于这个原因，在上面的例子中，List肯定始终是[1,2,3,4]的排列。
 
-All_distinct works like all_different, but 'tries harder' to detect when all are different.
+all_distinct的工作方式类似于all_different，但是它会__尽力__检测何时所有内容都不相同。
 
-For example, let's try constraining 3 variables to be different values from 1..2 - an impossibility.
+例如，我们尝试将3个变量约束在1..2范围中，且值不同——这是不可能的。
 
 ------------------------
 24 ?- X in 1..2, Y in 1..2, Z in 1..2, all_different([X,Y,Z]).
@@ -683,37 +650,33 @@ X in 1..2,
 all_different([X, Y, Z]),
 Y in 1..2,
 Z in 1..2.
- 
+
 25 ?- X in 1..2, Y in 1..2, Z in 1..2, all_distinct([X,Y,Z]).
 false.
- 
+
 26 ?-
 ------------------------
 
-In the above, **all_different** fails to detect that there are only two possible values for X, Y, and Z, so two of them must be the same.
+在上述内容中，**all_different**没能检测到X、Y和Z只有两个可能值，因此其中两个变量必定相同。
 
-**all_distinct** does more work to analyze the domains of it's variables, and does detect this condition. The cpu cost of using `all_distinct` is higher, however - so this needs balanced against performance gains from pruning the search tree earlier.
+**all_distinct**会做更多工作来分析其变量的域，并会检测到这种情况。但是，使用__all_distinct__时cpu占用较高——因此，这需要提前修剪搜索树以提升性能。
 
-If you are having performance issues it might be worth investigating using one or the other.
+如果你遇到性能问题，那么使用其中一种方法进行审查可能是值得的。
 
 tuples_in(+ListOfVariableTuples, +ListOfAcceptedTuples)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It's fairly common to have a list of acceptable combinations of
-a few variables. A common situation would be ordering American style
-meals, where you order a full meal, whose price includes an entree and
-two sides, but you only get one side if you get the pie, etc. 
-You have to enumerate all the various combinations.
+列出一些变量的可选组合列表是很常见的。一种常见的情况是点美式餐，如果你点一份套餐，套餐的价格包含一份主菜和两个配菜；但如果你点的是馅饼，就只有一个配菜，等等。你需要列出所有不同的组合。
 
-The SWI-Prolog documentation contains this cool demo of selecting trains for a journey.
+SWI-Prolog文档有一个很酷的为一个行程选择火车班次的演示。
 
-.Train Journey
+.火车行程
 ==============================
 
 ------------------------------
 :- use_module(library(clpfd)).
 
-trains([[1,2,0,1], % from station, to station, departs at, arrives at
+trains([[1,2,0,1], % 出发站，到达站，离开时间，到达时间
         [2,3,4,5],
         [2,3,0,1],
         [3,4,5,6],
@@ -733,19 +696,17 @@ Ps = [[1, 2, 0, 1], [2, 3, 4, 5], [3, 4, 8, 9]].
 
 ==============================
 
-Beyond the sheer coolness of this as a path finding method,
-notice that we didn't have to do any labeling. There's only
-one solution.
+除了把它作为一种很酷的寻路方法之外，还请注意，我们无需进行任何标注。这里只有一个解。
 
-If you find yourself with tuples that look like +[[1,2], [2,7], [3,8]...]+ consider using +element/3+ instead.
+如果发现元组看起来像++[[1,2], [2,7], [3,8]…]++，请考虑使用++element/3++进行代替。
 
-.tuples_in Exercise
+.tuples_in练习
 *******************
 
-no 1. Modify the Train Journey program so it finds routes with any number of trains, not just 3.
- 
-no 2. You are asked to produce a table of employees who are eligible for promotion.
-You have this list of lists. Each inner list is a record for a single employee. The fields are employee #, last review score, # of safety violations, time in grade, required time for promotion
+no 1. 修改火车行程程序，使其能查找任意数量火车的路线，而不只是3趟。
+
+no 2. 你需要给出一张有资格晋升的员工列表。
+你有这张包含列表的列表。每个内部列表是一个员工的履历。其中的字段表示员工编号、最后考核成绩、违反安全规定次数、任职时间、晋升所需时间
 
 ---------
 employees([
@@ -757,9 +718,9 @@ employees([
    ]).
 ---------
 
-To be eligible for promotion an employee must have a last review score of 80 or above, no more than one safety violation, and their time in grade must be more than the required time for promotion.
+最后考核成绩高于80分、违反安全规定次数不超过1次、任职时间超过晋升所需时间的员工方有资格晋升。
 
-no 3. The last column, time required for promotion, isn't normalized. Employees are either team members or team leaders. Team members need 25 weeks in grade, team leaders need 50. The cheif architect has decided to abstract these into a second table so these numbers can be changed easily.
+no 3. 最后一列，晋升所需时间，还没有标准化。一个员工要么是团队成员，要么是团队领导。团队成员需要25周的任职时间，团队领导需要50周的任职时间才能晋升。首席架构师决定把这些数据抽取到第二张表中，这样就能轻松更改这些数字。
 
 ------------
 employees([
@@ -769,53 +730,45 @@ employees([
    [4, 45, 3, 75, 1],
    [5, 89, 0, 52, 2]
    ]).
-   
+
 time_in_grade([[1,25], [2,50]]).
 
 ------------
 
-Update exercise 2 to use the new data format.
+更新练习2，使用新的数据格式。
 
 *******************
 
-Sudoku
-~~~~~~
+数独
+~~
 
-OK, this isn't really the Sudoku predicate, but +transpose(+Matrix, ?Transpose)+ is useful when
-the variables are naturally expressed as a 2D grid.
+好吧，这个并不是真正的数独谓词，但当变量被自然地表示为一个二维网格时，用++transpose(+Matrix, ?Transpose)++谓词来处理它会很有效。
 
-Represent the grid as a list of lists. Each list is
-one row.
+将这个网格表示为一个包含列表的列表。每个列表就是一行。
 
-Many constraint predicates work on adjacency of elements in a list.
-If you need to operate on rows you can just use maplist.
-To operate on columns, transpose the matrix and they're now
-rows.
+许多约束谓词可以处理列表中元素的相邻关系。
+如果你需要对行进行操作，则可以使用maplist。
+要对列进行操作，可以转置矩阵，它们就变成成行了。
 
 [TIP]
-No, you don't need to transpose back. The new transposed matrix
-shares with the original. Any constraints on it are constraints
-on the original.
+不，你不需要将其转置回来。新的转置矩阵与原先的列表共用数据。对它做出任何约束就能对原先的列表进行约束。
 
-Here, for example, is a program to solve the "quarreling children" problem.
-It's made considerably simpler by only dealing with rows
+例如，下面是一个解决“吵架的孩子”问题的程序。
+通过只处理行，它就被大大简化了。
 
-.Quarreling Children
+. 吵架的孩子
 ---------------------
 
 /*
-	 much shorter quarreling children
+	 孩子吵架概述
 
-	 16 children are to be seated in a
-	 4 x 4 array of chairs.
+	 16个孩子要坐在4 x 4的椅子上。
 
-         the children are 8 girls (numbered 1..8) and
-	 8 boys (numbered 9..16).
+         其中有8个女孩（编号1..8）和8个男孩（编号9..16）。
 
-     1,3,5,8 think boys are ucky
-	 9,10,11,14 think girls are gross
+     1、3、5、8号认为男孩很烂，9、10、11、14号认为女孩很恶劣
 
-	 these pairs are enemies
+	 这几对是冤家：
 
 	 [[1,2], [4,6], [4,7], [4, 9],[9,11], [12, 14], [14,16]]
 
@@ -867,32 +820,28 @@ sex_compatible(A, B) :-
 
 ---------------------
 
-.transpose Exercise
+.transpose练习
 ************
 
-Write a predicate that will be part of a roguelike game.
+编写一个用于roguelike游戏的谓词。
 
-Your game board is a 2D array (list of lists). Each square contains
-one of the following 
+你的游戏板是一个二维数组（包含列表的列表）。每一格包含下列元素之一 
 
-* 0 - floor
-* 1 - walls
-* 2 - monster
-* 3 - the player
+* 0 - 地面
+* 1 - 墙
+* 2 - 怪物
+* 3 - 玩家
 
-write a predicate, can_move(+Board, -Moves)
-Board will be a board as defined above
-SafeMoves will be a list of lists, with a 1 where the player can move
-and a 0 where they cannot. Enforce these rules:
+编写一个谓词，can_move(+Board, -Moves)。Board是上面定义的游戏板。SafeMoves是一个包含列表的列表，其中玩家可以移动的地方为1，不能移动的地方为0。必须遵守以下规则：
 
-* The player can move 0,1,2, or 3 spaces, connected horizontally and vertically, not diagonally.
-* The player cannot pass through or end on walls
-* the player cannot pass through or end adjacent to monsters
-* The player cannot move off the board
+*  玩家可以沿着水平、垂直但不能是对角线方向移动0、1、2或3个空格。
+*  玩家不能穿过或到达墙上
+*  玩家在行动时不能穿过或与怪物相邻
+*  玩家不能离开游戏板
 
-Sample run (some liberties taken for readability):
+示例运行（出于可读性采取了一些措施）：
 
-.board Example
+.游戏板示例
 -----------------
 board([
 [1,1,1,1,1,1,1,1],
@@ -920,15 +869,14 @@ M = [
 ]
 -----------------
 
-Hint: write a predicate to print out M in a more readable format
-Extra credit: use the terminal coloring library to make that fancy
+提示：编写一个谓词，以一种更可读的格式输出M。额外加分：可以使用终端着色库实现这一点
 
 ************
 
 zcompare(?Order, ?A, ?B)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-zcompare is useful when you need to know the relationship between the domains of two unlabeled variables.
+当你需要了解两个未标注变量的域之间的关系时，zcompare很有用。
 
 --------
 10 ?- X in 0..10, Y in 11..20,zcompare(C, X, Y).
@@ -944,7 +892,7 @@ Y in 11..20.
 
 --------
 
-I'll admit, that second one puzzled me a bit. C, it turns out, is still unbound, since we can't really tell the relationship between X and Y when their domains overlap. But if C becomes bound later, then it will go back and constrain X and Y!
+我承认，第二个让我有些困惑。结果表明，C仍然不受约束，因为当X和Y的域重叠时，我们无法真正分辨X和Y之间的关系。但是，如果稍后绑定C，它将返回并约束X和Y！
 
 --------
 15 ?- X in 0..11, Y in 11..20,zcompare(C, X, Y),C = <, writeln(C).
@@ -957,46 +905,46 @@ Y in 11..20.
 --------
 
 [TIP]
-Annie is here, looking like this =8cO trying to imagine debugging code that uses lots of zcompares
+安妮在这里表示，看起来像这样=8cO，试着想象使用了大量zcompare的调试代码
 
-.zcompare Exercise
+.zcompare练习
 ******************
 
-create a constraint +same_side_of_line/4+ , whose arguments are dicts of the form
+创建一个约束谓词++same_side_of_line/4++，其参数是词典形式
 
 ------------
 point{x:12.34, y:56.78}
 ------------
 
-The first two arguments are points on a line, the next two are two test points. The predicate succeds if both test points are on the same side of the line, or both are on the line, the constraint holds.
+前两个参数是直线上的点，后两个参数是两个测试点。 如果两个测试点都在直线的同侧，或两个都在直线上，则谓词成功，约束成立。
 
 ******************
 
-Resources
-----------
+资源
+--
 
-clp(fd) is great with resource constrained problems.
+clp(fd)非常适合解决资源受限的问题。
 
-Scheduling problems are often a repeated series of resource constraint problems. 
+调度问题通常是一系列资源约束问题的组合。 
 
-Most such problems can be worked with the primitive constraints, but a couple built in clp(fd) constraints are useful.
-+sum/3+ and +scalar_product/4+ are fairly straightforward. 
+大多此类问题能用基本的约束谓词解决，但内置在clp(fd)中的几个约束谓词也很好用。
+++sum/3+和+scalar_product/4++非常简单实用。 
 
-The use of +scalar_product/4+ might not be obvious. It's useful for defining relationships where different things have different 'costs' (in time, money, or something else).
+++scalar_product/4++的作用可能不是很明显。它在定义不同事物具有不同__成本__（时间、金钱或其他）的关系时很有用。
 
-.Penny Candy
+.便士糖
 ------------------------
 
 %
-%  penny candy example
-%  Timmy has 25 cents
-%  gumballs cost a penny
-%  snickers cost 10 cents
-%  toffees are 2 cents
-%  licorice costs 5 cents
+%  便士糖示例
+%  蒂米有25分
+%  口香糖球1分
+%  士力架10分
+%  太妃糖2分
+%  甘草糖5分
 %
-%  what are Timmys alternatives?
-%  assume Timmy spends the entire 25 cents
+%  蒂米有哪些可选方案？
+%  假设蒂米花了整整25分
 scalar_test(Candy) :-
 	Candy = [_Gumball, _Snickers, _Toffee, _Licorice],
 	Candy ins 0..sup,
@@ -1024,23 +972,22 @@ Toffee = 5 ;
 
 
 [TIP]
-Try the penny candy example without the +Candy ins 0..sup+ line.
-What will happen?
+尝试在便士糖示例中删去++Candy ins 0..sup++这一行。
+会发生什么？
 
-Sequences
----------
+排序
+--
 
-We often need things to be in a specific sequence. 
+我们经常需要让事物按特定的顺序进行排列。 
 
-These constraints help establish sequences.
+这些约束谓词有助于进行排序。
 
 chain(+List, +Relation)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Chain establishes the Relation constraint between each
-pair of adjacent elements in List.
+Chain谓词会对列表中每对相邻元素间建立关系约束。
 
-.Chain Example
+.Chain示例
 --------------
 
 chain_example([A,B,C,D]) :-
@@ -1058,34 +1005,34 @@ _G4682#>=_G4685.
 lex_chain(+Lists)
 ~~~~~~~~~~~~~~~~~
 
-+lex_chain/1+ is more interesting.  It takes a list of lists.
+++lex_chain/1++更有趣。它接受一个包含列表的列表。
 
-It constrains the inner lists to be 'lexicographically non-decreasing'.
-This means they should be sorted by columns starting on the left. This is the normal way we sort text
+它将内部列表约束为__词典非递减__顺序。
+这意味着应该从左边开始根据纵行的词典顺序排序它们。这是我们通常对文本进行排序的方式
 
 -------------
 andy   
-babble <-- below andy because a is less than b
-beef   <-- below babble because a is less than e
-been   <-- below beef because f is less than n
+babble <-- 在andy后面，因为a在b前面
+beef   <-- 在babble后面，因为a在e后面
+been   <-- 在beef后面，因为f在n前面
 -------------
 
-Besides the obvious use of sorting text, lex_chain has other sorting uses.
+除了排序文本这种显而易见的用途外，++lex_chain++还能用来排序其他东西。
 
-.Hospital Patients
+.医院的病人
 ******************
 
-Patients in a hospital have a coded set of information as a term.
+医院里的病人的一组编码信息构成了一个项。
 
 ------------
 patient(ID, Name, YearAdmitted, MonthAdmitted, DayAdmitted, HourAdmitted, MinuteAdmitted, Status, Payment)
 ------------
 
-Status is either 0 (normal) or 1 (emergency).
+状态为0（正常）或1（紧急）。
 
-Payment is either 0 (private), 1 (insurance), or 2 (medicaid).
+付款方式为0（个人）、1（保险）或2（医疗补助）。
 
-here's some patients
+下面是一些病人信息
 
 ------------
 patient(1, 'Bob Jones', 2014, 10, 1, 4, 55, 0, 2).
@@ -1095,37 +1042,36 @@ patient(4, 'Arnold Abouja', 2014, 10, 1, 5, 0, 0, 0).
 patient(5, 'Seth Humbolt', 2014, 10, 1, 5, 10, 0, 0).
 ------------
 
-constrain the patients to be seen acording to these rules:
+根据以下规则限定病人：
 
-1. See all emergency cases first, before any normal cases.
+1. 先看紧急的病例，再看正常的病例。
 
-2. for patients with same status (emergency/normal), see patients in the order they arrived, except 
+2. 对于处于相同状态（紧急/正常）的病人，按其到达顺序接诊，除非 
 
-3. If a private or insurance patient arrived up to an hour after a medicaid patient, see them first.
+3. 如果是个人或是使用保险付费的病人在使用医疗补助的病人到达后的一小时内到达，先接诊前者。
 
-Hint: use lex_chain
+提示：使用lex_chain
 
 ******************
 
 element(?Index, +List, ?Element)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Element is the constraint equivilent of +nth1/3+ .
+Element是++nth1/3++的等价约束谓词。
 
-It constrains an element of a list by it's location in the list. Element must be the Indexth member of List, counting from 1.
+它根据元素在列表中的位置来约束元素。元素必须是列表中第Index个成员，从1开始计数。
 
-.Suzy Flirting Example
+.苏西调情示例
 ===========================================
 
 ---------------------------
 %
-% Suzy wants to flirt with Nathan
-% But not when her old boyfriend John is around
+% 苏西想和纳森调情
+% 但当她的老男友约翰在身边时就不会
 %
-% Suzy, Nathan, and John all must take classes 1..6
+% 苏西、纳森和约翰都必须参加课程1..6
 %
-% How can Suzy arrange her schedule so she can flirt
-% in at least 3 classes?
+% 苏西如何安排日程以便能至少在3个课程上调情？
 
 flirt_constraint(Suzy, Nathan, John, FlirtPeriods) :-
 	length(Suzy, 6),
@@ -1139,7 +1085,7 @@ flirt_constraint(Suzy, Nathan, John, FlirtPeriods) :-
 	all_different(John),
 	FlirtPeriods = [A,B,C],
 	FlirtPeriods ins 1..6,
-	A #< B,    % remove unwanted symmetry
+	A #< B,    % 删除不需要的对调
 	B #< C,
 	flirty_period(A, Suzy, Nathan, John),
 	flirty_period(B, Suzy, Nathan, John),
@@ -1157,24 +1103,24 @@ flirty_period(Period, Suzy, Nathan, John) :-
 
 ===========================================
 
-A very important use of element is in helping to constrain different facts. 
+元素谓词的一个非常重要的用途是帮助约束不同的事实。 
 
-For example, suppose we have a group of people, and we've numbered them by the alphabetic order of their names. Now we want to constrain a pair to be likely romantic partners. Being heterosexist and ageist, lets say we want to constrain them to be of opposite sexes and within 10 years difference in age.
+例如，假设我们要按照名字的字母顺序给一群人进行编号。现在我们要使其中一对成为浪漫的伴侣。作为异性恋和重视年龄代沟的人，我们要限制他们是异性并且年龄差在10年以内。
 
-This example also shows getting from index numbers to what we finally want - the names. It violates a rule of style for clp(fd) - set up your model in one predicate, label it in another - for pedagogic reasons.
+这个示例还显示了从索引号得出我们最终想要的——名字。出于教学之便，这个示例违反了有限域上的约束逻辑程序设计的范式——在一个谓词中设定模型，用另一个谓词标注。
 
-.Romantic Partners
+.浪漫的伴侣
 ==============================
 
 ------------------------------
 :- use_module(library(clpfd)).
 
 names([amy,bill,charley,deanna,eric,frieda,george,harley]).
-% women are 1, men are 0
+% 女人是1，男人是0
 genders([1,0,0,1,0,1,0,0]).
 ages([22,19,73,65,40,38,25,27]).
 
-% maps compatible names
+% 映射共用的姓名列表
 romance(A, B) :-
     names(Names),
     length(Names, NameLength),
@@ -1189,7 +1135,7 @@ romance(A, B) :-
     element(BIndex, Ages, BAge),
     AAge #< BAge #==> AAge + 10 #>= BAge,
     AAge #>= BAge #==> BAge + 10 #>= AAge,
-    AIndex #< BIndex, % remove unwanted symmetry and reflexiveness
+    AIndex #< BIndex, % 消除不想要的对调和自反关系
     label([AIndex, BIndex]),
     nth1(AIndex, Names, A),
     nth1(BIndex, Names, B).
@@ -1215,13 +1161,13 @@ false.
 circuit(+List)
 ~~~~~~~~~~~~~~
 
-The documentation for this is more confusing than enlightening.
+关于这方面的文档，所带来的困惑要多于启发。
 
-+circuit/1+ takes a list of variables and constrains them to form a 'circuit' - a sequence where each number after the first is Vn+1 = Vn mod L + 1 . Where Vn is an element, Vn+1 is the next element, and L is the length of the list.
+++circuit/1++读取变量列表并将其约束为一个__回路__，在第1个数字之后每个数字的关系为Vn+1 = Vn mod L + 1。其中Vn是元素，Vn+1是下一个元素，L是列表长度。
 
-So this is 'clock arithmetic'.
+因此，这个就是__时钟算术__。
 
-.circuit example
+.circuit示例
 -----------------
 ?- length(Vs, _), circuit(Vs), label(Vs).
 Vs = [] ;
@@ -1232,28 +1178,28 @@ Vs = [3, 1, 2] ;
 Vs = [2, 3, 4, 1] .
 -----------------
 
-automaton
-~~~~~~~~~
+自动机
+~~~
 
-Automaton is the 900 lb gorilla of sequencing.
+自动机在排序领域举足轻重。
 
-Automaton comes from _automata theory_ , the study of abstract machines. +automaton/3+ constrains it's first argument to be an element of a language that can be recognized by a finite acceptor. +automaton/8+ constrains it's first argument to be an element of a language that can be recognized by a pushdown acceptor.
+自动机出自__自动机理论__，即抽象机器的研究。++automaton/3++将其第一个参数约束为可以被有限接受器识别的语言元素。++automaton/8++会将其第一个参数约束为下推接受器可以识别的语言元素。
 
-Do what? (Mathematicians avert your eyes, I'm going to explain finite automata while playing fast and loose).
+会做些什么？（数学家们避开眼睛，我将快速、不严格地解释一下有限自动机）。
 
-A finite automaton is a bit like a hopscotch game. You have a (finite) set of _states_ and directional arcs between them. Each arc is associated with an input. Here's a typical automaton.
+有限自动机有点像跳房子游戏。你有一组（有限的）__状态__及其之间有方向弧线。每个弧线都与一个输入关联。下面是一个典型的自动机。
 
-image::images/automatona.png[A Typical Automaton]
+image::images/automatona.png[一个典型的自动机]
 
-Start on the green state. Read the first element in the sequence, and if there's an arc labeled with it, go to that state. If not,  your sequence is not in the language. If there is, repeat in the new state - read the next element, and try to follow the arc. If you are in a blue state what you've read so far is part of the language.
+从绿色状态开始。读取序列中的第一个元素，如果那里有一个用它标注的弧线，跳转到那个状态。如果没有，则你的序列不在这个语言之中。如果存在，请在新状态下重复——读取下一个元素，然后尝试沿弧线执行。如果你处于蓝色状态，那么到此为止，你所读取的内容就是该语言的一部分。
 
-Our language accepts one or more 0's, followed by a 1, then a 2.
+我们的语言接受一个或多个0，接着是一个1，然后是一个2。
 
-The green states are called source states, the blue ones sink states. A state could be both a sink and a source.
+绿色状态称为源状态，蓝色状态为宿状态。一个状态可以同时是源状态和宿状态。
 
-And here's how to encode it in SWI-Prolog:
+下面是如何在SWI-Prolog中编写它：
 
-.single source automaton
+.单源自动机
 ===========================
 
 -------------------------
@@ -1275,11 +1221,11 @@ demo_single_source(Vs) :-
 
 ===========================
 
-Here's a variation on our first automaton that accpets the same as the first automaton, but allows you to add 10 to all the numbers, so it accepts sequences like 10,10,10,10,11,12.
+下面是第一个自动机的变体，它与第一个自动机相仿，但却使所有数字加了10，因此它会接受10、10、10、10、11、12这样的序列。
 
-image::images/automaton.png[Variation that also accepts sequences with each 10+ first]
+image::images/automaton.png[变体，接受原先各个数字加10形成的序列]
 
-.multi source automaton
+.多源自动机
 ==========================
 
 ----------------------
@@ -1304,45 +1250,45 @@ demo_len(Vs) :-
 
 ==========================
 
-automaton/3 example - certain employees can't work at night, others on weekends, we encode this with an automaton that reads a list of who'se on shift.
-Maybe enough with the employee examples - how about valid messages?
+automaton/3示例——某些员工晚上不工作，其他一些周末不工作，我们使用自动机将其编码，读取轮班人员的列表。
+也许员工示例够多了——那换成有效消息如何？
 
-Automaton/8  - on hold til I understand it
+Automaton/8——暂停，直到我理解为止
 
-example for counters - extend the employee example so employees get a max and min number of shifts
+计数器示例——对员工示例示例进行拓展，获得员工的最大和最小班次数。
 
 
-Scheduling
-----------
+调度
+--
 
-Scheduling is something we do every day. Bob can only meet from 2 to 3, you need a couple uninterrupted hours to think about the data base, mom's coming by for lunch. It's also a major economic constraint - the factory can make tractor parts from march to july but has to convert to making beanie babies for christmas.
+日程安排是我们每天都要做的事情。比如鲍勃只能在2点到3点见面；你要连续几个小时不受打扰地考虑数据库；妈妈要过来吃午饭。这也可能是一个重要的的经济约束情况——工厂可以在3月到7月生产拖拉机部件，但得为圣诞节转而生产豆豆娃。
 
-serialized
-~~~~~~~~~~~~
+序列化
+~~~
 
-Serialized expresses the common constraint of not being in two places at once. It takes two lists of the same length, the first is start times and the second durations. It constrains them that intervals defined by the starts and durations don't overlap. Notice that the starts don't have to be in order - that is, serialized([4,0,2], [1,1,1]) succeeds.
+序列化表示不能在两个地方出现同样的约束。它需要两个长度相同的列表，第一个是开始时间列表，第二个是持续时间列表。需要限制它们开始和持续时间所定义的区间不重叠。注意，它不必按顺序排列——即，serialized([4,0,2], [1,1,1])也是可行的。
 
-.dailyschedule
+.日程安排
 =====================
 
 ----------------------
 :- use_module(library(pairs)).
 
 my_schedule_today(Starts, Durations) :-
-  % unordered list of stuff to do today
-  % in a real problem we'd probably use minutes, these are hours in 24 hour format
+  % 无序的今日待办事项清单
+  % 这些都是24小时制的小时，在实际问题中，我们可能会用到分钟
     Starts = [PrepForSmith, MeetWithSmith, _WriteDBInstaller, Lunch, _CallAlice, _ReadDocs],
-  % and how long they'll take
+  % 事项所需的时间
     Durations = [2, 1, 2, 1, 1, 1],
-  % make all of them start in 9am to 5pm
+  % 使它们都在上午9点到下午5点的范围内
     Starts ins 9..17,
-  % and make sure lunch happens at noon or 1pm
+  % 并确保午餐时间在中午或下午1点
     Lunch in 12 \/ 13,
-  % Meeting with Smith is planned for 1pm
+  % 与史密斯的会面时间定于下午1点
     MeetWithSmith #= 13,
-  % have to do the prep before the meeting
+  % 会面前的准备工作
 	PrepForSmith #< MeetWithSmith,
-  % enforce being serialized
+  % 进行序列化
     serialized(Starts, Durations).
 
 demo_my_schedule(Starts, Durations) :-
@@ -1350,7 +1296,7 @@ demo_my_schedule(Starts, Durations) :-
 	append(Starts, Durations, Vars),
 	label(Vars),
 	pairs_keys_values(NameDurs ,
-       ['Prep for Smith', 'Meet With Smith', 'Write DB Installer', 'Lunch', 'Call Alice', 'Read Flubbercalc Docs'], Durations),
+       [会面前的准备工作, 与史密斯会面, 编写数据库安装程序, 午餐, 给爱丽丝打电话, 阅读Flubbercalc文档], Durations),
 	pairs_keys_values(Pairs, Starts, NameDurs),
 	keysort(Pairs, Sorted),
 	pairs_keys_values(Sorted, SortStarts, SortNameDurs),
@@ -1358,24 +1304,24 @@ demo_my_schedule(Starts, Durations) :-
 
 print_sched([], _).
 print_sched([Start | ST], [Name-Duration | T]) :-
-	format('~w: ~w  (~w hr)~n', [Start, Name, Duration]),
+	format('~w：~w  （~w小时）~n', [Start, Name, Duration]),
 	print_sched(ST, T).
 
 8 ?- demo_my_schedule(Starts, Durations).
-9: Prep for Smith  (2 hr)
-11: Call Alice  (1 hr)
-12: Lunch  (1 hr)
-13: Meet With Smith  (1 hr)
-14: Write DB Installer  (2 hr)
-16: Read Flubbercalc Docs  (1 hr)
+9：会面前的准备工作  （2小时）
+11：给爱丽丝打电话  （1小时）
+12：午餐  （1小时）
+13：与史密斯会面  （1小时）
+14：编写数据库安装程序  （2小时）
+16：阅读Flubbercalc文档  （1小时）
 Starts = [9, 13, 14, 12, 11, 16],
 Durations = [2, 1, 2, 1, 1, 1] ;
-9: Prep for Smith  (2 hr)
-11: Call Alice  (1 hr)
-12: Lunch  (1 hr)
-13: Meet With Smith  (1 hr)
-14: Write DB Installer  (2 hr)
-17: Read Flubbercalc Docs  (1 hr)
+9：会面前的准备工作  （2小时）
+11：给爱丽丝打电话  （1小时）
+12：午餐  （1小时）
+13：与史密斯会面  （1小时）
+14：编写数据库安装程序  （2小时）
+17：阅读Flubbercalc文档  （1小时）
 Starts = [9, 13, 14, 12, 11, 17],
 Durations = [2, 1, 2, 1, 1, 1] 
 
@@ -1386,15 +1332,15 @@ Durations = [2, 1, 2, 1, 1, 1]
 global_cardinality/3
 ~~~~~~~~~~~~~~~~~~~~
 
-+global_cardinality/3+ counts the number of occurances of each value in it's first argument.
+++global_cardinality/3++计算每个值在第一个参数中出现次数。
 
-Here's an example. Suppose we have a list of employees for the shifts in a 24/7 convenience store.
+下面是一个示例。假设我们有一个24/7便利店轮班的员工名单。
 
 ----------------------------------------------------
 shifts([1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,5,6,4,5,3]).
 ----------------------------------------------------
 
-we want to find out how many shifts each employee gets.
+我们想知道每个员工轮班了多少次。
 
 ----------------------------------------------------
 shifts([1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,5,6,4,5,3]).
@@ -1407,8 +1353,7 @@ count_shifts(Counts) :-
      global_cardinality(Shifts, Counts, []).
 ----------------------------------------------------
 
-Remember, we're in constraint land, so this works even if you don't know 
-shifts 'ahead of time'
+记住，我们在约束领域下，所以即使你__先前__不知道轮班情况，也是可行的
 
 --------------------------------------------
 post_shifts(Counts) :-
@@ -1417,41 +1362,41 @@ post_shifts(Counts) :-
      length(Values, 6),
      pairs_keys_values(Counts, Keys, Values),
      global_cardinality(UnknownShifts, Counts, []),
-     % at this point I have Counts and UnknownShifts constrained,
-     % though I don't know UnknownShifts
-     shifts(UnknownShifts). % now it's bound
+     % 在这一点上，我已经约束了Counts和UnknownShifts，
+     % 尽管我不知道UnknownShifts
+     shifts(UnknownShifts). % 现在它被绑定了
 --------------------------------------------
 
-+global_cardinality/3+ has two options
+++global_cardinality/3++有两个选项
 
-* +consistency(value)+  -  presents a 'weaker' consistency. I don't know what this is, if you find out let me know
-* +cost(Cost, Matrix)+ - given a matrix of values for key i in position j, constrain the total cost to Cost
+* +consistency(value)+  -  呈现++较弱++的一致性。我不知道这意味着什么，如果你明白请告诉我。
+* cost(Cost, Matrix) - 给定一个由键i在位置j的值组成的矩阵，将总价值约束为Cost
 
-.global_cardinality Exercise
+.global_cardinality练习
 ****************************
 
-Design an **exercise** that covers the +cost/2+ option of global_cardinality. Include a solution.
+设计一个**练习**，该练习要用到global_cardinality的++cost/2++选项。并给出一个解。
 
 ****************************
 
-+cumulative/2+ and +cumulative/1+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++cumulative/2++和++cumulative/1++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+cumulative/2+ takes a list of _tasks_ and constrains them to not exceed a limit at any time during the tasks.
+++cumulative/2++读取一个__任务__列表，并约束其在任务期间的任何时候不超过限制。
 
-Tasks can be specified flexibly, by any combination of two of start, duration, and end. Each task also has an amount of resources it uses, and a task identifier.
+可以通过组合开始、持续和结束时间中的任意两者来灵活地指定任务。每个任务还包含其使用的资源量和一个任务标识符。
 
-+cumulative/1+ just defaults the limit to 1.
+++cumulative/1++则默认限制为1。
 
-.mechanics
+.机械
 ===============
 
 ---------------------------
 %
-%  We have 3 mechanics, and a number of repair jobs to do
-%  Transmission jobs take two mechanics
+%  我们有3台机械，需要做一些维修工作
+%  进行传输工作需要两台机械
 %
-%  Find a set of start times for the jobs during a 10 hour day
+%  为每天10小时的工作设定一组开始时间
 %
 task_names([
     transmission, brake_job_1, brake_job_2, diagnosis_1,
@@ -1482,27 +1427,27 @@ S = [0, 0, 1, 2, 3, 7] .
 
 ===============
 
-.cumulative Exercise
+.cumulative练习
 **********************
 
-1) It looks like the mechanics aren't very busy. Add a few more tasks.
+1)看起来机械的工作不是很充实。再添加几个任务。
 
-2) Mechanic 3 only works the first 3 hours of the day. Modify the example to take this into account.
+2)3号机械仅在一天的前3个小时工作。修改示例，将这个要求纳入其中。
 
 **********************
 
-Optimization
-------------
+优化
+--
 
-We frequently need not only to satisfy a set of constraints, but to find the optimal solution. Problems like "Which of these products should this factory make to maximize profit?" and "Using 3 mechanics, how fast can we repair all these cars?" are optimization problems.
+我们经常不只满足于找到符合约束条件的解，还要找到最优解。像“工厂应该生产哪些产品来实现利润最大化？”和“有3台机械，我们能多快修好所有这些车？”这样的问题都是优化问题。
 
-+label/1+ has an arity two version with a slightly different name, +labeling/2+.
-The options are the first argument. The options are important for optimization problems, and for increasing the efficiency of the labeling process.
+++label/1++还有一个具有两个元数的版本，名称稍有不同，即++labeling/2++。
+选项是在第一个参数。这些选项对于优化问题和提升标注过程的效率都很重要。
 
-The two we're concerned with right now are +max/1+ and +min/1+ . Adding one of them to the options causes the solutions to be presented in order, with the variable in the leftmost max or min sorted first, then proceeding down the list.
-max terms sort decreasing order, min terms sort increasing order.
+现在我们要关注的两个参数是++max/1++和++min/1++。将其中一个放入选项中，就能按顺序显示解，最左边为最大值或最小值，然后按序向下排列。
+max会按递减顺序排序，min则按递增顺序排序。
 
-.inorder
+.中序遍历
 -------------------------------------------------------------
 7 ?- [X,Y] ins 1..3, labeling([max(X), min(Y)], [X,Y]).
 X = 3,
@@ -1523,39 +1468,39 @@ Y = 3 ;
 false.
 -------------------------------------------------------------
 
-Making Labeling Fast
---------------------
+快速标注
+----
 
-Internally, +labeling/2+ attempts to assign values to variables one at a time. Each time a value is chosen, a subtree of possibilities is removed. You want to make those subtrees as large as possible.
+在内部，++labeling/2++每次会尝试把值赋给变量。每次选择一个值，就会移除一个可能性子树。你要让那些子树尽可能大。
 
-How To Label Efficiently
-~~~~~~~~~~~~~~~~~~~~~~~~
+如何高效标注
+~~~~~~
 
-Start by ordering your variables for labeling. Place the variables that will reduce the search tree by the largest value first. Knowing which these are depends on knowledge of the domain, but you can accumulate data in use if necessary.
+首先对要标注的变量进行排序。先分配最大的能削减搜索树的值。知道这些是什么取决于对域的了解，但如果有必要，你可以在使用中收集数据。
 
-Often, within a variable you have latitude how to assign labels. Suppose you're working on a medical treatment recommending system. Here's the items:
+通常，你会有选择地标注变量。假设你正在使用医疗推荐系统。下面是一些项目：
 
-* treat for radiation exposure
-* prescribe antibiotics
-* provide hyperbaric repressurization
-* intubate to provide airway
-* prescribe painkillers
-* prescribe anti-cobra venom
-* prescribe blood pressure regulators
+* 治疗辐射照射
+* 开抗生素
+* 提供高压复压
+* 插管以提供气道
+* 开止痛药
+* 开抗眼镜蛇毒的药
+* 提供血压调节器
 
-Common sense is that, hopefully, radiation exposure will be less common than sniffles, so we'll be matching 'prescribe antibiotics' more often than 'treat for radiation exposure'.  So examining items in this order is likely to be faster:
+常识是，辐射照射比流鼻涕更罕见，相比__治疗辐射照射__，我们会更常匹配到__开抗生素__这个项目。因此按照这个顺序检查项目可能会更快：
 
-* prescribe painkillers
-* intubate to provide airway
-* prescribe blood pressure regulators
-* prescribe antibiotics
-* provide hyperbaric repressurization
-* prescribe anti-cobra venom
-* treat for radiation exposure
+* 开止痛药
+* 插管以提供气道
+* 提供血压调节器
+* 开抗生素
+* 提供高压复压
+* 开抗眼镜蛇毒的药
+* 治疗辐射照射
 
-In Prolog this will look something like
+在Prolog中，它可能会是这样呈现
 
-.Better Order
+.更好的顺序
 -----------------------------------------
 treatments([painkillers,
 			intubate,
@@ -1568,79 +1513,77 @@ treatments([painkillers,
 -----------------------------------------
 
 
-settings
-~~~~~~~~
+设定
+~~
 
-There are 3 settings in the first argument of +labeling/2+ ; variable selection strategy, value order, and branching strategy. Choose one value for each setting (or use the defaults).
+++labeling/2++的第一个参数中有3个设定项：变量选择策略、数值顺序和分支策略。为每个设置选定一个值（或使用默认值）。
 
-At most one option of each category can be specified, and an option must not occur repeatedly.
+最多可以为每个类别的设定一个选项，并且选项不得重复出现。 
 
-To some extent, picking the best settings is a matter of experiment. If you get desperate, there's an undocumented +random_value(Seed)+ (props to https://github.com/adbenitez[adbenitez] for pointing
-this out) or +random_variable+ .
+在某种程度上，选择最佳设定是一个实验问题。如果你感到绝望，还有一个未归纳入文档的谓词++random_value(Seed)++（感谢 https://github.com/adbenitez[adbenitez] 指出这一点）或++random_variable++。
 
-Parts of this section are copied from the documentation.
+本节的部分内容是从文档中复制过来的。
 
 
-variable selection strategy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+变量选择策略
+^^^^^^
 
-The variable selection strategy lets you specify which variable of Vars is labeled next and is one of:
+变量选择策略可以让你指定Vars中下一个要标注的变量，并且是其中之一：
 
-* +leftmost+ - Label the variables in the order they occur in Vars. This is the default.
+* +leftmost+ - 按照变量在Vars中出现的顺序标注它们。这是默认设定。
 
-* +ff+  First fail. Label the leftmost variable with smallest domain next, in order to detect infeasibility early. This is often a good strategy when there are small domains for the subsequent variables when a first variable is chosen.
+* +ff+  失败优先。不断用最小的域标注最左边的变量，以便尽早发现不可行性。当选定第一个变量、后续变量的域很小时，这通常是一个很好的策略。
 
-* +ffc+ Of the variables with smallest domains, the leftmost one participating in most constraints is labeled next. Applying a constraint has to remove a subtree, so this can be a good strategy.
+* +ffc+ 在域最小的变量中，标注进行最多约束的最左边的变量为下一个变量。应用一个约束条件就必须删除一个子树，所以这可能是一个好的策略。
 
-* +min+  Label the leftmost variable whose lower bound is the lowest next. note that this is +min/0+, different than +min/1+, which determines solution order and is discussed in the previous section above. This is a good tactic if you're trying to minimize some global value that is likely to be lower if various variables are (e.g. a minimum cost solution).
+* +min+  标注下界最小、最左边的变量为下一个变量。注意，这个是++min/0++，与++min/1++不同，后者决定解的顺序，它在上面的前一节中讨论过。如果你试图让某个总值最小，在各种变量都较小的情况下这个总值可能会更小，那么这是一个很好的策略（例如，最小成本的解决方案）。
 
-* +max+  Label the leftmost variable whose upper bound is the highest next. This too is different than +max/1+.  And the advice for +min+ applies to +max+ when trying to maximize a global value.
+* +max+  标注上界最大、最左边的变量为下一个变量。这也与++max/1++不同。而且，当试图使一个总值最大时，对++min++的建议也适用于++max++。
 
-value order
-^^^^^^^^^^^
+数值顺序
+^^^^
 
-The value order is one of:
+数值顺序是以下之一：
 
-* +up+ Try the elements of the chosen variable's domain in ascending order. This is the default.
+* +up+ 按升序尝试所选变量域的元素。这是默认设定。
 
-* +down+ Try the domain elements in descending order.
+* +down+ 按降序尝试域内元素。
 
-Obviously, if you've got an assymmetric distribution, like we demonstraed in how to label efficiently above, try elements in most common first order.
+显然，如果元素出现的频率不均匀，就按频率由高到低的顺序尝试元素，就像我们上面在如何高效标注中展示的那样。
 
-branching strategy
-^^^^^^^^^^^^^^^^^^
+分支策略
+^^^^
 
-The branching strategy is one of:
+分支策略是以下之一：
 
-* +step+ For each variable X, a choice is made between X = V and X #\= V, where V is determined by the value ordering options. This is the default.
+* +step+ 对于每个变量X，在X = V和X #= V之间做出选择，其中V由数值顺序选项决定。这是默认设定。
 
-* +enum+  For each variable X, a choice is made between X = V_1, X = V_2 etc., for all values V_i of the domain of X. The order is determined by the value ordering options.
+* +enum+  对于每个变量 X，对于X域内所有值 V_i，在X = V_1、X = V_2等之间进行选择，顺序由价值排序选项确定。 
 
-* +bisect+ For each variable X, a choice is made between X #=< M and X #> M, where M is the midpoint of the domain of X. Choose this option if many variables are selections among a range of integers, a 'value', rather than one among a set of enumerated values (e.g. percentages, vs a=0, b=1, c=2)
+* +bisect+ 对于每个变量X，在X #=< M和X #> M之间进行选择，其中M是X的域的中点。如果变量是从一系列整数中选择一个值，而不是在一组枚举值中选择一个（例如百分比、vs a=0、b=1、c=2），请选择此选项。
 
-Debugging and Testing
----------------------
+调试和测试
+-----
 
-Isolating the portion of the program that sets up the constraints allows you to
-see the constrained domains in the top level.
+通过隔离程序中设置约束的部分，可以在更高层次查看受约束的域。
 
-Here are some predicates that are useful for debugging and for interfacing clp(fd) with the rest of the Prolog environment.
+下面这些谓词，在调试和将clp(fd)与Prolog环境的其他部分连接起来时很有用。
 
-+fd_var(+Var)+ True iff Var is a CLP(FD) variable.
++fd_var(+Var)+ 如果Var是一个CLP(FD)变量，则为真。
 
-+fd_inf(+Var, -Inf)+  Inf is the infimum of the current domain of Var.
++fd_inf(+Var, -Inf)+   Inf是Var的当前域的下确界。
 
-+fd_sup(+Var, -Sup)+ Sup is the supremum of the current domain of Var.
++fd_sup(+Var, -Sup)+  Sup是Var的当前域的上确界。
 
-+fd_size(+Var, -Size)+ Determine the size of a variable's domain. Size is the number of elements of the current domain of Var, or the atom sup if the domain is unbounded.
++fd_size(+Var, -Size)+  确定变量的域的大小。Size是Var的当前域的元素数量，如果域是无界的，则为原子sup。
 
-+fd_dom(+Var, -Dom)+  Dom is the current domain of Var. This predicate is useful if you want to reason about domains. If you just want to display domains for debugging, use the graphic debugger or toplevel.
++fd_dom(+Var, -Dom)+   Dom是Var的当前域。如果你想对域进行推理，这个谓词会非常有用。如果你只想显示要调试的域，请使用图形调试器或顶层。
 
-+indomain/1+ binds it's argument to members of it's domain on backtracking. 
++indomain/1+  在回溯时将其参数绑定给其域的成员。 
 
-For example, to implement a custom labeling strategy, you may need to inspect the current domain of a finite domain variable. With the following code, you can convert a finite domain to a list of integers:
+例如，要实现自定义标注策略，你可能需要检查有限域变量的当前域。使用以下代码，可以将有限域转换为整数列表：
 
-.domainAsIntegers
+.域作为整数
 =================
 
 ---------------------------------------------------------------
@@ -1649,7 +1592,7 @@ dom_integers(D, Is) :- phrase(dom_integers_(D), Is).
 dom_integers_(I)      --> { integer(I) }, [I].
 dom_integers_(L..U)   --> { numlist(L, U, Is) }, Is.
 dom_integers_(D1\/D2) --> dom_integers_(D1), dom_integers_(D2).
-Example:
+示例：
 
 ?- X in 1..5, X #\= 4, fd_dom(X, D), dom_integers(D, Is).
 D = 1..3\/5,
@@ -1659,35 +1602,35 @@ X in 1..3\/5.
 
 =================
 
-Consider clp(fd) for writing mocks.
+考虑使用clp(fd)来编写类似的东西。
 
-+call_residue_vars/2+ calls a predicate, then reports all unresolved constraints or frozen variables. Since usually a proper program resolves all it's variables, this is useful for finding things not resolved.
+++call_residue_vars/2++调用一个谓词，然后报告所有没有得出结果的约束或被冻结的变量。因为通常一个正确的程序会解析它所有的变量，这对于发现没有解析的东西很有用。
 
-Beware that it may be buggy.
+当心它可能有程序错误。
 
-Applying Constraints in Stages
-------------------------------
+分阶段应用约束
+-------
 
-Being able to 'hang on' to a system of of constrained variables, apply more, and then back up and remove the later constraints is useful.
+能够__坚持__一个约束变量的系统，应用更多，然后备份并删除后面的约束是有用的。
 
-For example, suppose you have a constraint based drawing program - the sort of program where you draw pieces, and if one is nearly aligned with the other, the program ''realizes'' you want them vertically or horizontally aligned. If you then drag one of the blocks, they all move to maintain the constraint.
+例如，假设你有一个基于约束的绘图程序——一个用来绘制零件的程序，如果把一个零件调整得几乎与另一个零件对齐，则该程序会__意识到__你希望它们垂直或水平对齐。如果随后拖动其中一个块，它们都会同时移动以保持约束。
 
-To resolve the actual position of the blocks, you're going to have to constrain one of them to the position it was dragged to, causing everything to constrain to single values. But now you've lost all your constraints!
+要得出块的实际位置，必须将其中一个块约束到拖动到的位置，从而使所有块都约束到单个值。但这时你会丢弃所有约束！
 
-There are two solutions to this. The first, backtracking, can work in many situations, but of course enforces a certain structure on the program. So this is more appropriate for situations like a mixed search-constraint strategy, where you set up some constraints, then search, adding different constraints, and backtracking if the problem becomes overconstrained.
+对此有两种解决方案。第一种，回溯，可以在许多情况下使用，当然，这在程序中就必须要使用特定结构。因此，这更适合混合搜索约束策略这样的情况，在这种情况下，你可以设置了一些约束条件，然后搜索，再添加不同的约束，并在问题过约束的时候进行回溯。
 
-The second solution is +copy_term/2+ .
+第二种解决方案是++copy_term/2++。
 
-+copy_term/2+ copies a term (often a list of domain variables) and makes a new term with the same _shape_ but with new variables. The copy includes the attributes (and hence the constraints).
+++copy_term/2++复制一个项（通常是域变量列表），创建一个__形式__相同但却使用新变量的新项。副本包括属性（因此也包括约束）。
 
-By the same _shape_, we mean:
+至于相同的__形式__，我们的意思是：
 
-* atomic items match identical items
-* variables match variables
-* lists match lists of the same length whose items are the same shape.
-* compound terms match compound terms of the same functor and arity, whose arguments are the same shape.
+* 原子项目与相同项目匹配
+* 变量与变量匹配
+*  列表匹配具有相同形式的项目、相同长度的列表。
+* 复合项匹配具有相同函子和实参形式的复合项。
 
-.CopyTerm
+.复制项
 ============
 
 --------------------------------------------------------
@@ -1697,9 +1640,9 @@ Copy = foo([bar, _G2450, meep(_G2456, [1, 2])], 3).
 
 ============
 
-So what happens with constraints?
+那么，约束会发生什么呢？
 
-.CopyTerm Attributes
+.复制项的属性
 =======================
 
 -----------------------------------------------------------------------------
@@ -1713,9 +1656,9 @@ XA in 0..2.
 
 =======================
 
-Copying half of the constrained variables is generally not a great idea, you'll end up with links outside your constraint system. Not strictly forbidden, but do it only deliberately, since usually you want the constraint system in a 'stable' place you can come back to.
+只复制一半约束变量通常不是一个好主意，最终你会得到约束系统之外的关系。这个不是严格禁止的，但除非是有特殊用意才这么做，因为通常你希望约束系统处于一个可以返回的__稳定__位置。
 
-.Copy Term Half Attributes
+.复制项的一半属性
 ====================================================================
 
 -----------------------------------------------------------------
@@ -1730,38 +1673,33 @@ Y in 1..5.
 
 ====================================================================
 
-.Constrained Graphics Exercise
+.约束图形练习
 ************************************************************************************************
 
-Write a small graphics program, using whatever graphics environment you're comfortable with, 
-that draws a set of dots on the screen. If you move one of the dots to be aligned withanother, vertically or horizontally, within a few pixels, then the two should be linked, and move together. 
-Holding down shift always just moves one dot.
+编写一个小型图形程序，使用任意你熟悉的图形开发环境，在屏幕上绘制一组点。如果你移动其中一个点，使之与另一个几个像素内的点垂直或水平对齐，那么这两个点应该连接起来，并一起移动。
+按住shift键总是只移动一个点。
 
-Extra Credit
-Expand your program into a small diagram editor.
+额外加分
+把你的程序扩展为一个小型图形编辑器。
 
-(Note, you're near the end of the tutorial, you might want to read to the 
-end at the same time you're working this problem).
+（注意，你已经接近教程的末尾，你可能希望在解决这个问题的同时把这个教程读完）。
 
 ************************************************************************************************
 
-.Constraint Shell
+.约束外壳
 ***********************************************************************************************
-Implement a constraint shell decision support system. This should allow the user 
-to define constraints one at a time using some simple command language (not programming)
-and see the domains of variables. The user should be able to remove any of the constraints
-they have entered. 
+实现了一个约束外壳决策支持系统。它能让用户使用一些简单的命令语言（而不是编程）定义约束，并查看变量的域。用户应该能够删除他们引入的任何约束。 
 
-Sample run
+示例运行
 
 -----------------------------------
 ?-decision_support.
-Decision Support (type h for help)
+决策支持（键入h获取帮助）
 ds=h
-l = list all variables and constraints
-<variable name> in <integer> thru <integer> = define new variable
-<variable name> <operator> <integer or variable name> = define new constraint
-r <number>  = retract constraint <number>
+l = 列出所有变量和约束
+<variable name> in <integer> thru <integer> = 定义一个新变量
+<variable name> <operator> <integer or variable name> = 定义一个新约束
+r <number>  = 撤销约束 <number>
 q = quit
 
 ds=a in 1 thru 10
@@ -1773,21 +1711,21 @@ ds=a < b
 ds=b < 5
 #2: b < 5
 ds=l
-variables   
+变量   
 a in 1..3
 b in 1..4
-constraints
+约束
 #1: a < b
 #2: b < 5
 ds=r 2
-retracting #2: b < 5
+撤销 #2: b < 5
 ds=b < 8
 #3: b < 8
 ds=l
-variables
+变量
 a in 1..6
 b in 1..7
-constraints
+约束
 #1: a < b
 #3: b < 8
 ds=q
@@ -1798,12 +1736,12 @@ ds=q
 ***********************************************************************************************
 
 			
-Making Your Own Constraints
----------------------------
+制定自己的约束
+-------
 
-First, you often don't need to make a custom constraint, you need a custom convenience predicate. If you need 'sort of near to', which constrains X and Y to be N to M spaces from each other, then you can write a normal predicate that applies all the constraints. This is  what you've been doing all along in this tutorial.
+首先，你通常不必创建自定义约束，只需要创建一个便利的自定义谓词。如果你需要__有些近似__这个约束条件，即约束X和Y彼此之间相距N到M个空间，那么你可以编写一个适用于所有约束的普通谓词。这就是你在本教程中一直在做的事情。
 
-.Sort Of Near To
+.有些近似
 =================
 
 --------------------------------------------------------
@@ -1814,11 +1752,11 @@ sort_of_near_to(X, Y, N, M) :-
 
 =================
 
-If you do actually need to write a constraint, here's how.
+如果你确实要编写一个约束，下面是方法。
 
-First, you'll need some setup
+首先，你需要进行一些设定
 
-.Own Constraint Setup
+.自己的约束设定
 ======================
 
 -----------------------------------------
@@ -1829,43 +1767,43 @@ First, you'll need some setup
 
 ======================
 
-then you need to define the predicate the user uses to apply your constraint.
+然后，你需要定义用户用来使用你的约束的谓词。
 
-There are three steps to complete in this predicate. 
+在这个谓词中，要完成三个步骤。 
 
-1. Convert the constraint to an internal form, the 'propagator', by calling +clpfd:make_propagator/2+.
-2. Attach each variable to the propagator by calling +clpfd:init_propagator/2+
-3. Trigger the propagator so the initial state is set, we fail if we're overconstrained, and the initial domain is set, using +clpfd:trigger_once/1+ .
+1. 通过调用++clpfd:make_propagator/2++，将约束转换为内部形式，即__传播程序__。
+2. 通过调用++clpfd:init_propagator/2++，将每个变量附加到传播程序。
+3. 触发传播程序以设置初始状态，如果过度约束，则失败，并使用++clpfd:trigger_once/1++设置初始域。
 
 
-.Even Predicate
+. 偶数谓词
 ====================
 
 -------------------------------------------------------
-% constrain X to be even
+% 将X约束为偶数
 even(X) :-
         clpfd:make_propagator(even(X), Prop),  <1>
         clpfd:init_propagator(X, Prop),  <2>
         clpfd:trigger_once(Prop). <3>
 -------------------------------------------------------
 
-<1> Convert the constraint into an internal form +Prop+ , the _propagator_ .
-<2> Attach each variable (only X here) to the internal propagator.
-<3> Trigger the Propagator once to add the initial state to the system.
+<1> 将这个约束转化为内部形式++Prop++，即__传播程序__。
+<2> 将每个变量（这里只有X）附加到内部传播程序。
+<3> 触发一次传播程序，将初始状态添加到系统中。
 
 ====================
 
-Finally, you need to define the conditional check that's called when the constraint is evaluated. This requires adding a clause to +clpfd:run_propagator/2+ .
+最后，需要定义在计算约束时调用的条件检查。这需要向++clpfd:run_propagator/2++添加一个子句。
 
-The first argument of +clpfd:run_propagator/2+ must match the declaration in +make_propagator/2+. 
+++clpfd:run_propagator/2++中的第一个参数必须与++make_propagator/2++中的声明相匹配。 
 
-The second argument is a mutable state maintained by clp(fd). It can be used to 'kill' a constraint if it need no longer be triggered, if the constraint has failed or the variable is bound to a valid value, or if it's domain is now reduced to only values that meet the constraint.
+第二个参数是由clp(fd)维护的可变状态。如果不再需要触发约束、如果约束失败或变量绑定为一个有效值，或者现在它的域被削减到只剩能满足约束的值，则可以使用它来__杀死__约束。
 
-.Even Callback
+.偶数回调
 ====================
 
 ----------------------------------------------------------------
-% constrain X to be even
+% 将X约束为偶数
 clpfd:run_propagator(even(X), MState) :-
         (   integer(X) -> clpfd:kill(MState), 0 is X mod 2
         ;   true
@@ -1874,9 +1812,9 @@ clpfd:run_propagator(even(X), MState) :-
 
 ====================
 
-And now we can use our new constraint.
+现在可以使用我们的新约束了。
 
-.New Constraint
+.新约束
 ====================
 
 ---------------------------------
@@ -1895,37 +1833,29 @@ false.
 
 ====================
 
-Notice that run_propagator is nondeterministic. It can fail (signaling that there is no solution for X). For example, even(X),X = 3.
+注意，run_propagator是不确定的。它可能会失败（这表明X没有解决方案）。例如，even(X),X = 3.
 
-.exercise Try even
+.尝试偶数练习
 *************************
 
-Put a spy point on +clpfd:run_propagator/2+ and query even(X), X = 3.
+在++clpfd:run_propagator/2++放置一个监视点，并查询even(X), X = 3.
 
-How many times is run_propagator called?
+看看run_propagator被调用了多少次？
 
 *************************
 
 [TIP]
-Fun fact - the Julian library uses clp(fd) extensively.
+有趣的事实——Julian库大量使用了clp(fd)。
 
-Conclusion
------------
+结语
+--
 
-Remember, constraint programming is something you should consider any time you have several variables and need to solve for a compatible solution among all of them.
+请记住，只要你有多个变量，并且需要在所有变量之间求出一个相容的解，你就应该考虑约束编程。
 
-SWI-Prolog ships with a number of constraint libraries. If you're truly inspired, make a tutorial similar to this one for clp(b) or clp(qr) or CHR. If you're inspired to do this, drop me a line, as we're trying to get a nice library of these tutorials together, with a common format so we can automate parts of the process downstream.
+SWI-Prolog附带了许多约束库。如果你真的受到了启发，可以为clp(b)、clp(qr)或CHR做一个与本篇教程类似的教程。如果你有想法这么做，请给我写信，因为我们正试图把这些教程整合在一个很好的库中，并使用一种通用的格式，这样我们就可以自动处理下游的部分流程。
 
-I hope you've enjoyed this tutorial. If you notice any mistakes, or want to suggest improvements, or just are totally stumped, email annie66us (at) yahoo_(dotcom) and let me know.
+希望你喜欢这个教程。如果你注意到任何错误，或是想提出改进建议，或者完全被难住了，请发送电子邮件至 annie66us@yahoo.com，让我知道。
 
-You can often find me as Anniepoo on ##prolog channel on freenode.net IRC.
+你通常可以在freenode.net IRC的##prolog频道里找到我，我是Anniepoo。
 
-Thanks to Markus Triska for the clp(fd) library. Hoot Markus!  Thanks to Alan Baljeu for helping with some confusing points. Thanks to Michael Richter for some of the software pipeline setup that produces these tutorials.
-
-
-
-
-
-
-
- 
+感谢马库斯·特里斯卡的clp(fd)库。向马库斯致意！感谢艾伦·波尤解决了一些令人困惑的问题。感谢迈克尔·里克特提供的生成教程所需的软件管道的配置。
